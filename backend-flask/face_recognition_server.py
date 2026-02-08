@@ -181,11 +181,16 @@ def track_faces_continuous(frame, yolo_model, tracked_faces):
     return updated_faces
 
 # ==================== PROCESS VIDEO STREAM ====================
-def process_video_stream(camera_id, video_url):
+def process_video_stream(camera_id, video_url, token):
     """
     Process video stream and emit detections via WebSocket
     """
     print(f"Starting video processing for {camera_id}")
+    
+    # Add token to video URL if provided
+    if token:
+        separator = '&' if '?' in video_url else '?'
+        video_url = f"{video_url}{separator}token={token}"
     
     # Open video stream
     cap = cv2.VideoCapture(video_url)
@@ -264,6 +269,10 @@ def start_stream(camera_id):
     if camera_id in active_streams and active_streams[camera_id]:
         return jsonify({'message': 'Stream already active'}), 200
     
+    # Get token from request
+    data = request.get_json() or {}
+    token = data.get('token') or request.headers.get('Authorization', '').replace('Bearer ', '')
+    
     # Get video URL from Express backend
     video_url = f"{EXPRESS_API}/{camera_id}.mp4"
     
@@ -271,7 +280,7 @@ def start_stream(camera_id):
     active_streams[camera_id] = True
     thread = threading.Thread(
         target=process_video_stream,
-        args=(camera_id, video_url),
+        args=(camera_id, video_url, token),
         daemon=True
     )
     thread.start()
@@ -304,6 +313,7 @@ def handle_disconnect():
 def handle_stream_request(data):
     """Handle request to start streaming detections"""
     camera_id = data.get('camera_id')
+    token = data.get('token')  # Get token from socket data
     print(f"Stream requested for {camera_id}")
     
     # Start stream via HTTP endpoint
@@ -312,7 +322,7 @@ def handle_stream_request(data):
         active_streams[camera_id] = True
         thread = threading.Thread(
             target=process_video_stream,
-            args=(camera_id, video_url),
+            args=(camera_id, video_url, token),
             daemon=True
         )
         thread.start()

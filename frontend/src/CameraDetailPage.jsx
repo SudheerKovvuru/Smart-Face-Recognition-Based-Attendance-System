@@ -13,8 +13,14 @@ function CameraDetailPage({ cameraId, cameraName, onBack }) {
   const canvasRef = useRef(null);
   const socketRef = useRef(null);
 
-  // Video URL from Express backend
-  const videoUrl = `http://localhost:5000/api/video/${cameraId}.mp4`;
+  // Video URL from Express backend with auth token
+  const getVideoUrlWithAuth = () => {
+    const token = localStorage.getItem('token');
+    const baseUrl = `http://localhost:5000/api/video/${cameraId}.mp4`;
+    return token ? `${baseUrl}?token=${token}` : baseUrl;
+  };
+
+  const videoUrl = getVideoUrlWithAuth();
 
   useEffect(() => {
     // Connect to Flask WebSocket server
@@ -28,8 +34,14 @@ function CameraDetailPage({ cameraId, cameraName, onBack }) {
       console.log('Connected to face recognition server');
       setIsConnected(true);
       
-      // Request stream for this camera
-      socket.emit('request_stream', { camera_id: cameraId });
+      // Get token from localStorage
+      const token = localStorage.getItem('token');
+      
+      // Request stream for this camera with token
+      socket.emit('request_stream', { 
+        camera_id: cameraId,
+        token: token 
+      });
     });
 
     socket.on('disconnect', () => {
@@ -133,7 +145,8 @@ function CameraDetailPage({ cameraId, cameraName, onBack }) {
       {/* Header */}
       <div className="detail-header">
         <button className="back-button" onClick={onBack}>
-          <ArrowLeft size={18} />
+          <ArrowLeft size={20} />
+          <span>Back to Grid</span>
         </button>
         <div className="detail-title">
           <VideoIcon size={24} />

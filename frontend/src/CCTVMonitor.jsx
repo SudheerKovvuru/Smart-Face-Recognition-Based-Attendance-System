@@ -13,51 +13,55 @@ function CCTVMonitor({ onCameraClick }) {
   // Backend video URLs
   const API_URL = 'http://localhost:5000/api/video';
   
+  // Get auth token for video requests - DEFINED FIRST
+  const getVideoUrlWithAuth = (baseUrl) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      return `${baseUrl}?token=${token}`;
+    }
+    return baseUrl;
+  };
+  
   const cameras = [
-  {
-    id: 'cam1_trim',  // Changed from 1 to 'cam1'
-    name: 'ENTRANCE - CAM 01',
-    url: `${API_URL}/cam1_trim.mp4`,
-  },
-  {
-    id: 'cam2',  // Changed from 2 to 'cam2'
-    name: 'CORRIDOR - CAM 02',
-    url: `${API_URL}/cam2.mp4`,
-  },
-  {
-    id: 'cam3',  // Changed from 3 to 'cam3'
-    name: 'CORRIDOR - CAM 03',
-    url: `${API_URL}/cam3.mp4`,
-  },
-  {
-    id: 'cam4',  // Changed from 4 to 'cam4'
-    name: 'ENTRACE - CAM 04',
-    url: `${API_URL}/cam4.mp4`,
-  }
-];
+    {
+      id: 'cam1_trim',
+      name: 'ENTRANCE - CAM 01',
+      url: `${API_URL}/cam1_trim.mp4`,
+    },
+    {
+      id: 'cam2',
+      name: 'CORRIDOR - CAM 02',
+      url: `${API_URL}/cam2.mp4`,
+    },
+    {
+      id: 'cam3',
+      name: 'CORRIDOR - CAM 03',
+      url: `${API_URL}/cam3.mp4`,
+    },
+    {
+      id: 'cam4',
+      name: 'ENTRACE - CAM 04',
+      url: `${API_URL}/cam4.mp4`,
+    }
+  ];
 
   return (
     <div className="cctv-container">
       {/* Scanline overlay effect */}
       <div className="scanline-overlay"></div>
 
-      {/* Header */}
-      
       {/* Camera Grid */}
       <div className="camera-grid">
         {cameras.map((camera) => (
-          <div key={camera.id} className="camera-card"
+          <div 
+            key={camera.id} 
+            className="camera-card"
             onClick={() => {
-      console.log('Clicked camera:', camera);
-      const url = `/camera/${camera.id}?name=${encodeURIComponent(camera.name)}`;
-      window.open(url, '_blank');
-    if (onCameraClick) {
-      onCameraClick(camera);
-    } else {
-      console.error('onCameraClick is not defined!');
-    }
-  }}
-  style={{ cursor: 'pointer' }}
+              console.log('Clicked camera:', camera);
+              const url = `/camera/${camera.id}?name=${encodeURIComponent(camera.name)}`;
+              window.open(url, '_blank');
+            }}
+            style={{ cursor: 'pointer' }}
           >
             {/* Camera Info Header */}
             <div className="camera-header">
@@ -79,7 +83,7 @@ function CCTVMonitor({ onCameraClick }) {
                 loop
                 muted
                 playsInline
-                src={camera.url}
+                src={getVideoUrlWithAuth(camera.url)}
               >
                 Your browser does not support the video tag.
               </video>
