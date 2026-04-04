@@ -21,11 +21,13 @@ const DEMO_VIDEOS_PATH = "C:\\Users\\sudhe\\OneDrive\\Desktop\\MP\\ProjectUpdate
 const authRoutes = require('./routes/auth');
 const timetableRoutes = require('./routes/timetable');
 const attendanceRoutes = require('./routes/attendance');
+const notificationRoutes = require('./routes/notification');
 const { auth, isAdminOrFaculty } = require('./middleware/auth');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/timetable', timetableRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/notification', notificationRoutes);
 
 // ✅ SINGLE video streaming route
 app.get('/api/video/:filename', auth, isAdminOrFaculty, (req, res) => {

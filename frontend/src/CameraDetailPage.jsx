@@ -88,6 +88,37 @@ export default function CameraDetailPage() {
     };
   }, []);
 
+  // ── Send absence notification email ──────────────────────────────────────
+  useEffect(() => {
+    sendAbsenceNotification();
+  }, []);
+
+  async function sendAbsenceNotification() {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/notification/send-absence-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          studentEmail: '22a51a4260@adityatekkali.edu.in',
+          studentName: 'Student'
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        console.log('✅ Absence email sent successfully');
+      } else {
+        console.log('⚠️ Email status:', data.error);
+      }
+    } catch (error) {
+      console.log('ℹ️ Email service note:', error.message);
+    }
+  }
+
   function refreshStats() {
     const students = ALL_STUDENTS.map(name => {
       // Check if student is always absent
