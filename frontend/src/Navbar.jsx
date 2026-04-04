@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Video, Search, User, LogOut, Settings, UserCircle } from 'lucide-react';
 import './Navbar.css';
+import aitamLogo from './assets/aitam.png';
 
 function Navbar({ activeTab, onTabChange, user, onLogout }) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -20,7 +21,9 @@ function Navbar({ activeTab, onTabChange, user, onLogout }) {
         {/* Left - Logo and College Name */}
         <div className="navbar-left">
           <div className="logo-container">
-            <div className="logo-placeholder">LOGO</div>
+            <div className="logo-placeholder">
+              <img src={aitamLogo} alt="Logo" />
+            </div>
           </div>
           <span className="college-name">AITAM</span>
         </div>
@@ -46,13 +49,13 @@ function Navbar({ activeTab, onTabChange, user, onLogout }) {
               </button>
             )}
             
-            <button
-              className={`nav-link ${activeTab === 'search' ? 'active' : ''}`}
-              onClick={() => onTabChange('search')}
-            >
-              <Search size={18} />
-              <span>Search</span>
-            </button>
+            {/* <button */}
+              {/* className={`nav-link ${activeTab === 'search' ? 'active' : ''}`} */}
+              {/* onClick={() => onTabChange('search')} */}
+            {/* > */}
+              {/* <Search size={18} /> */}
+              {/* <span>Search</span> */}
+            {/* </button> */}
           </div>
         )}
 

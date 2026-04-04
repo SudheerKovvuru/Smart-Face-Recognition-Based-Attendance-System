@@ -5,6 +5,7 @@ import Login from './Login';
 import Signup from './Signup';
 import CCTVMonitor from './CCTVMonitor';
 import CameraDetailRoute from './CameraDetailRoute';
+import FacultyDashboard from './FacultyDashboard';
 import './App.css';
 
 // Protected Route Component
@@ -22,7 +23,7 @@ function ProtectedRoute({ children, user, requiredRoles }) {
 
 // Main Layout Component (handles navigation)
 function MainLayout({ user, onLogout }) {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState(user?.role === 'faculty' ? 'live' : 'dashboard');
   const navigate = useNavigate();
 
   // Handle tab change and navigate
@@ -43,26 +44,30 @@ function MainLayout({ user, onLogout }) {
       <main className="main-content">
         <Routes>
           <Route path="/dashboard" element={
-            <div className="placeholder-page">
-              <h1>{user?.role === 'student' ? 'Student' : user?.role === 'faculty' ? 'Faculty' : 'Admin'} Dashboard</h1>
-              <p>Dashboard content coming soon...</p>
-              {user && (
-                <div className="user-info">
-                  <p><strong>Name:</strong> {user.firstName} {user.lastName}</p>
-                  <p><strong>Roll No:</strong> {user.rollNo}</p>
-                  <p><strong>Email:</strong> {user.email}</p>
-                  <p><strong>Role:</strong> {user.role}</p>
-                  {user.role === 'student' && (
-                    <>
-                      <p><strong>Branch:</strong> {user.branch?.toUpperCase()}</p>
-                      <p><strong>Course:</strong> {user.course?.toUpperCase()}</p>
-                      <p><strong>Year:</strong> {user.year}</p>
-                      <p><strong>Section:</strong> {user.section}</p>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
+            user?.role === 'faculty' ? (
+              <FacultyDashboard />
+            ) : (
+              <div className="placeholder-page">
+                <h1>{user?.role === 'student' ? 'Student' : user?.role === 'admin' ? 'Admin' : 'Dashboard'}</h1>
+                <p>Dashboard content coming soon...</p>
+                {user && (
+                  <div className="user-info">
+                    <p><strong>Name:</strong> {user.firstName} {user.lastName}</p>
+                    <p><strong>Roll No:</strong> {user.rollNo}</p>
+                    <p><strong>Email:</strong> {user.email}</p>
+                    <p><strong>Role:</strong> {user.role}</p>
+                    {user.role === 'student' && (
+                      <>
+                        <p><strong>Branch:</strong> {user.branch?.toUpperCase()}</p>
+                        <p><strong>Course:</strong> {user.course?.toUpperCase()}</p>
+                        <p><strong>Year:</strong> {user.year}</p>
+                        <p><strong>Section:</strong> {user.section}</p>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            )
           } />
           
           <Route path="/live" element={
@@ -92,8 +97,8 @@ function MainLayout({ user, onLogout }) {
             </div>
           } />
 
-          {/* Default redirect to dashboard */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          {/* Default redirect to dashboard or live based on role */}
+          <Route path="/" element={<Navigate to={user?.role === 'faculty' ? '/live' : '/dashboard'} replace />} />
         </Routes>
       </main>
     </>
@@ -144,11 +149,19 @@ function App() {
         <Routes>
           {/* Public Routes - Login/Signup */}
           <Route path="/login" element={
-            user ? <Navigate to="/dashboard" replace /> : <Login onLogin={handleLogin} />
+            user ? (
+              user.role === 'faculty' ? 
+              <Navigate to="/live" replace /> : 
+              <Navigate to="/dashboard" replace />
+            ) : <Login onLogin={handleLogin} />
           } />
           
           <Route path="/signup" element={
-            user ? <Navigate to="/dashboard" replace /> : <Signup />
+            user ? (
+              user.role === 'faculty' ? 
+              <Navigate to="/live" replace /> : 
+              <Navigate to="/dashboard" replace />
+            ) : <Signup />
           } />
 
           {/* Camera detail page - opens in new tab (Protected) */}
