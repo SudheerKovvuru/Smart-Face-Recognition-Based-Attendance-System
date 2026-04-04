@@ -8,33 +8,41 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGO_URI,)
-.then(() => console.log('✅ MongoDB connected successfully'))
-.catch(err => console.error('❌ MongoDB connection error:', err));
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('✅ MongoDB connected successfully'))
+  .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// Path to your videos folder
 const VIDEOS_PATH = 'D:\\Downloads';
+const DEMO_VIDEOS_PATH = "C:\\Users\\sudhe\\OneDrive\\Desktop\\MP\\ProjectUpdated";
 
-// Import routes
 const authRoutes = require('./routes/auth');
+const timetableRoutes = require('./routes/timetable');
+const attendanceRoutes = require('./routes/attendance');
 const { auth, isAdminOrFaculty } = require('./middleware/auth');
 
-// Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/timetable', timetableRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
-// Video streaming endpoint (protected - only admin and faculty)
+// ✅ SINGLE video streaming route
 app.get('/api/video/:filename', auth, isAdminOrFaculty, (req, res) => {
   const filename = req.params.filename;
-  const videoPath = path.join(VIDEOS_PATH, filename);
 
-  // Check if file exists
+  // Try DEMO path first, fall back to VIDEOS_PATH
+  let videoPath = path.join(DEMO_VIDEOS_PATH, filename);
   if (!fs.existsSync(videoPath)) {
-    return res.status(404).json({ error: 'Video not found' });
+    videoPath = path.join(VIDEOS_PATH, filename);
+  }
+
+  console.log('🎬 Requested:', filename);
+  console.log('📂 Resolved path:', videoPath);
+  console.log('✅ Exists:', fs.existsSync(videoPath));
+
+  if (!fs.existsSync(videoPath)) {
+    return res.status(404).json({ error: 'Video not found', path: videoPath });
   }
 
   const stat = fs.statSync(videoPath);
@@ -42,58 +50,48 @@ app.get('/api/video/:filename', auth, isAdminOrFaculty, (req, res) => {
   const range = req.headers.range;
 
   if (range) {
-    // Parse range header
     const parts = range.replace(/bytes=/, '').split('-');
     const start = parseInt(parts[0], 10);
     const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-    const chunksize = (end - start) + 1;
+    const chunksize = end - start + 1;
     const file = fs.createReadStream(videoPath, { start, end });
-    const head = {
+
+    res.writeHead(206, {
       'Content-Range': `bytes ${start}-${end}/${fileSize}`,
       'Accept-Ranges': 'bytes',
       'Content-Length': chunksize,
       'Content-Type': 'video/mp4',
-    };
-
-    res.writeHead(206, head);
+    });
     file.pipe(res);
   } else {
-    // No range header - send entire file
-    const head = {
+    res.writeHead(200, {
       'Content-Length': fileSize,
       'Content-Type': 'video/mp4',
-    };
-    res.writeHead(200, head);
+    });
     fs.createReadStream(videoPath).pipe(res);
   }
 });
 
-// Health check endpoint
+// Health check
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'Server is running', 
+  res.json({
+    status: 'Server is running',
     videosPath: VIDEOS_PATH,
+    demoVideosPath: DEMO_VIDEOS_PATH,
     mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
   });
 });
 
-// List available videos (protected)
+// List available videos - checks BOTH folders
 app.get('/api/videos', auth, isAdminOrFaculty, (req, res) => {
   const videos = ['cam1_trim.mp4', 'cam2.mp4', 'cam3.mp4', 'cam4.mp4'];
-  const availableVideos = videos.filter(video => 
+  const availableVideos = videos.filter(video =>
+    fs.existsSync(path.join(DEMO_VIDEOS_PATH, video)) ||
     fs.existsSync(path.join(VIDEOS_PATH, video))
   );
   res.json({ videos: availableVideos });
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Video & Auth server running on http://localhost:${PORT}`);
-  console.log(`📁 Serving videos from: ${VIDEOS_PATH}`);
-  console.log(`🎥 Available endpoints:`);
-  console.log(`   - POST /api/auth/signup`);
-  console.log(`   - POST /api/auth/login`);
-  console.log(`   - GET /api/auth/me`);
-  console.log(`   - GET /api/video/:filename`);
-  console.log(`   - GET /api/videos`);
-  console.log(`   - GET /api/health`);
+  console.log(`✅ Server running on http://localhost:${PORT}`);
 });
