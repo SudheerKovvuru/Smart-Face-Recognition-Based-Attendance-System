@@ -75,10 +75,10 @@ This project solves these issues using:
 ---
 
 ## 📂 Project Structure
-├── backend-flask # ML inference server (face recognition)
-├── backend # Node.js API & authentication
-├── frontend # React dashboard
-├── README.md
+├── backend-flask # ML inference server (face recognition)<br>
+├── backend # Node.js API & authentication<br>
+├── frontend # React dashboard<br>
+├── README.md<br>
 
 
 ---
@@ -86,31 +86,41 @@ This project solves these issues using:
 ## 🔧 Installation & Setup
 
 ### 1️⃣ Clone the Repository
-git clone https://github.com/your-username/Smart-Face-Recognition-Based-Attendance-System.git
-cd Smart-Face-Recognition-Based-Attendance-System
+git clone https://github.com/your-username/Smart-Face-Recognition-Based-Attendance-System.git<br>
+cd Smart-Face-Recognition-Based-Attendance-System<br>
+
+---
 
 ## .env
-MONGO_URI=your_mongodb_uri
-JWT_SECRET=your_secret
-PORT=5000
-JWT_EXPIRY=1d
-EMAIL_USER=your_email
-EMAIL_PASSWORD=your_password
+MONGO_URI=your_mongodb_uri<br>
+JWT_SECRET=your_secret<br>
+PORT=5000<br>
+JWT_EXPIRY=1d<br>
+EMAIL_USER=your_email<br>
+EMAIL_PASSWORD=your_password<br>
+
+---
 
 ## Backend
-cd backend
-npm install
-npm start
+cd backend<br>
+npm install<br>
+npm start<br>
+
+---
 
 ## Frontend
-cd frontend
-npm install
-npm run dev
+cd frontend<br>
+npm install<br>
+npm run dev<br>
+
+---
 
 ## BackendFlaskk
-cd backend-flask
-pip install -r requirements.txt
-python face_recognition_server.py
+cd backend-flask<br>
+pip install -r requirements.txt<br>
+python face_recognition_server.py<br>
+
+---
 
 🔐 Security Features
 - JWT-based authentication
@@ -119,25 +129,33 @@ python face_recognition_server.py
 - Consent-based face enrollment
 - Data privacy compliance (GDPR & DPDP)
   
+---
+
 📊 Performance
 - ⏱️ Latency: ~81 ms per frame
 - 🎥 FPS: ~13 FPS (single camera)
 - 📉 Only ~15% drop with multiple cameras
 - 💾 Model RAM Usage: ~1.5 GB
-  
+
+---
+
 🚀 Key Highlights
 - Reduces manual attendance time from 5–10 minutes → seconds
 - Reduces admin workload by ~90%
 - Supports real-time campus monitoring
 - Scalable for multiple CCTV cameras
-  
+
+---
+
 🔮 Future Improvements
 - 📱 Mobile app integration
 - 🌐 Multi-campus deployment
 - 🧬 ArcFace integration for higher accuracy
 - 🤖 Federated learning for privacy
 - 🎯 Better handling of extreme angles & occlusions
-  
+
+---
+
 👨‍💻 Authors
 - Boddepalli Kiran Kumar
 - Pothumahanty Karthik Kumar
@@ -145,6 +163,8 @@ python face_recognition_server.py
 - Satagopam Sai Harish
 - Bongu Bharadwaj
 🎓 AITAM - CSE (AI & ML)
+
+---
 
 📜 License
 This project is for educational purposes.
