@@ -56,6 +56,7 @@ export default function CameraDetailPage() {
   const [currentCheck,     setCurrentCheck]     = useState(1);
   const [nextCheckIn,      setNextCheckIn]      = useState(10);
   const [elapsedTime,      setElapsedTime]      = useState(0);
+  const [isLoading,        setIsLoading]        = useState(true);
   const intervalRef = useRef(null);
   const countdownRef = useRef(null);
   const elapsedRef = useRef(0);
@@ -66,16 +67,22 @@ export default function CameraDetailPage() {
 
   // ── Initialise with a first batch of fake detections ─────────────────────
   useEffect(() => {
-    refreshStats();
+    // Start with loading state for 3-4 seconds to simulate face recognition
+    const loadingTimer = setTimeout(() => {
+      setIsLoading(false);
+      refreshStats();
+    }, 3500); // 3.5 seconds of loading
 
     // Simulate "new detection check" every 10 s (mirrors real backend interval)
-    intervalRef.current = setInterval(() => {
-      elapsedRef.current += 10;
-      setElapsedTime(elapsedRef.current);
-      refreshStats();
-      setCurrentCheck(prev => prev + 1);
-      setNextCheckIn(10);
-    }, 10_000);
+    const interval = setTimeout(() => {
+      intervalRef.current = setInterval(() => {
+        elapsedRef.current += 10;
+        setElapsedTime(elapsedRef.current);
+        refreshStats();
+        setCurrentCheck(prev => prev + 1);
+        setNextCheckIn(10);
+      }, 10_000);
+    }, 3500); // Start checks after loading is done
 
     // Countdown ticker
     countdownRef.current = setInterval(() => {
@@ -83,6 +90,8 @@ export default function CameraDetailPage() {
     }, 1_000);
 
     return () => {
+      clearTimeout(loadingTimer);
+      clearTimeout(interval);
       clearInterval(intervalRef.current);
       clearInterval(countdownRef.current);
     };
@@ -103,7 +112,7 @@ export default function CameraDetailPage() {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          studentEmail: '22a51a4260@adityatekkali.edu.in',
+          studentEmail: '22a51a4242@adityatekkali.edu.in',
           studentName: 'Student'
         })
       });
@@ -154,12 +163,21 @@ export default function CameraDetailPage() {
         </div>
 
         <div className="video-wrapper">
+          {isLoading && (
+            <div className="video-loading-overlay">
+              <div className="overlay-spinner">
+                <div className="overlay-ring"></div>
+                <div className="overlay-ring"></div>
+              </div>
+              <p className="overlay-text">Loading Camera Feed...</p>
+            </div>
+          )}
           <video
             autoPlay
             loop
             muted
             playsInline
-            className="detail-video"
+            className={`detail-video ${isLoading ? 'hidden' : ''}`}
             src={videoSrc}
           >
             Your browser does not support the video tag.
@@ -174,44 +192,63 @@ export default function CameraDetailPage() {
       {/* ── Right: 30 % – fake stats panel ───────────────────────────────── */}
       <div className="stats-section">
 
-        <div className="stats-header">
-          <h2>Detection Results</h2>
-          <span className="stats-badge">Period 1</span>
-        </div>
-
-        {/* Summary counts */}
-        <div className="stats-summary">
-          <div className="stat-box">
-            <span className="stat-value">{presentCount}</span>
-            <span className="stat-label">Present</span>
-          </div>
-          <div className="stat-box">
-            <span className="stat-value">{absentCount}</span>
-            <span className="stat-label">Absent</span>
-          </div>
-        </div>
-
-        {/* Student list */}
-        <div className="detected-list-header">
-          <span>Detected Students</span>
-        </div>
-
-        <div className="detected-list">
-          {detectedStudents.map((student, idx) => (
-            <div key={idx} className="detected-item">
-              <div className="detected-avatar">
-                {student.name.charAt(0).toUpperCase()}
-              </div>
-              <div className="detected-info">
-                <span className="detected-name">{toTitleCase(student.name)}</span>
-                <span className={`detected-status ${student.isAbsent ? 'absent' : 'present'}`}>
-                  {student.isAbsent ? 'Absent' : 'Present'}
-                </span>
-              </div>
-              <span className="detected-confidence">{student.isAbsent ? '—' : `${student.confidence}%`}</span>
+        {isLoading ? (
+          // ── Loading animation while recognizing faces ────────────────────
+          <div className="loading-container">
+            <div className="loading-spinner">
+              <div className="spinner-ring"></div>
+              <div className="spinner-ring"></div>
+              <div className="spinner-ring"></div>
             </div>
-          ))}
-        </div>
+            <h3 className="loading-text">Recognizing Faces...</h3>
+            <p className="loading-subtext">Analyzing video stream</p>
+            <div className="scan-lines">
+              <div className="scan-line"></div>
+            </div>
+          </div>
+        ) : (
+          // ── Detection results once loading is complete ───────────────────
+          <>
+            <div className="stats-header">
+              <h2>Detection Results</h2>
+              <span className="stats-badge">Period 1</span>
+            </div>
+
+            {/* Summary counts */}
+            <div className="stats-summary">
+              <div className="stat-box">
+                <span className="stat-value">{presentCount}</span>
+                <span className="stat-label">Present</span>
+              </div>
+              <div className="stat-box">
+                <span className="stat-value">{absentCount}</span>
+                <span className="stat-label">Absent</span>
+              </div>
+            </div>
+
+            {/* Student list */}
+            <div className="detected-list-header">
+              <span>Detected Students</span>
+            </div>
+
+            <div className="detected-list">
+              {detectedStudents.map((student, idx) => (
+                <div key={idx} className="detected-item">
+                  <div className="detected-avatar">
+                    {student.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="detected-info">
+                    <span className="detected-name">{toTitleCase(student.name)}</span>
+                    <span className={`detected-status ${student.isAbsent ? 'absent' : 'present'}`}>
+                      {student.isAbsent ? 'Absent' : 'Present'}
+                    </span>
+                  </div>
+                  <span className="detected-confidence">{student.isAbsent ? '—' : `${student.confidence}%`}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
       </div>
     </div>
